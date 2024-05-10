@@ -23,6 +23,8 @@ WHILE_LOOP;
 DO_WHILE_LOOP;
 PrintStatment;
 PrintWord;
+MAIN_METHOD;
+METHOD;
 
 }
 @members {
@@ -46,7 +48,7 @@ catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
 
-classInit:	  'public'? Class ID '{' code* '}' ->^(ClassInitaltion 'public'?  Class ID '{' code* '}'); 
+classInit:	  'public'? Class ID '{' code* nodeMainMethod code*  '}' ->^(ClassInitaltion 'public'?  Class ID '{' code* nodeMainMethod code*'}'); 
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -57,9 +59,32 @@ classDef:	  Class ID '{' code* '}' ->^(ClassDefinition Class ID '{' code* '}');
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+nodeMainMethod
+	:	mainmethod->^(MAIN_METHOD mainmethod);
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+mainmethod
+	:	(('public'|MODIFIRE) STATIC 'void' 'main' '(' 'String' '[]' ID')' '{' code*'}')
+	; 
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+methods	:	('public'|MODIFIRE) (STATIC)? ('void'|'int' | 'double' | 'float' | 'boolean') ID '('( ('int' | 'double' | 'float' | 'boolean') ID (',' ('int' | 'double' | 'float' | 'boolean') ID)* )?')' '{' code* '}' ;
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 code
 	:	valueInitaltion -> ^(ValueInitaltion valueInitaltion)
+		|methods-> ^(METHOD methods)
 		|if_statment -> ^(IF_Statment if_statment)
 		|for_loop -> ^(FOR_LOOP for_loop)
 		|while_loop -> ^(WHILE_LOOP while_loop)
@@ -371,14 +396,14 @@ catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 commint	:	(SL_COMMENT|ML_COMMENT)^;
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+STATIC	:	'static';
+MODIFIRE:	('private'|'protected');
 F_float	:	('F'|'f');
 
 Equl : '=' | '+=' | '-=' | '/=' | '%=';
 CondOpr : '<' | '>' | '==' | '>=' | '<=' | '!=';
 LogicOpr : '&&' | '&' | '||' | '|' | '^';
 
-Modifier:	'public'|'private'|'protected';
 Class	:	'class';
 Bool : 'true' | 'false';
 Fun	: 'sin' | 'cos'| 'tan' ;
