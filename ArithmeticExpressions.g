@@ -25,7 +25,9 @@ PrintStatment;
 PrintWord;
 MAIN_METHOD;
 METHOD;
-
+CALL;
+RETURN;
+OPJ;
 }
 @members {
 String s="";
@@ -74,7 +76,7 @@ catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.inpu
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
-methods	:	('public'|MODIFIRE) (STATIC)? ('void'|'int' | 'double' | 'float' | 'boolean') ID '('( ('int' | 'double' | 'float' | 'boolean') ID (',' ('int' | 'double' | 'float' | 'boolean') ID)* )?')' '{' code* '}' ;
+methods	:	('public'|MODIFIRE) (STATIC)? ('void'|'int' | 'double' | 'float' | 'boolean') ID '('( ('int' | 'double' | 'float' | 'boolean') ID (',' ('int' | 'double' | 'float' | 'boolean') ID)* )?')' '{' (code|nodereturn)* '}' ;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -111,7 +113,7 @@ catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
 print_word
-	:	('"' words '"'|ID|INT|DOUBLE)^ ;
+	:	('"' words '"'|nodeOPJ|ID|INT|DOUBLE)^ ;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -250,6 +252,7 @@ double_factor	:  ID -> ^(Factor ID)
 	| '-'  DOUBLE F_float?  -> ^(Factor  '-' DOUBLE F_float?)
 	| '(' double_generalArithExpr ')' -> ^(Factor  '(' double_generalArithExpr ')')
 	| Fun '(' double_generalArithExpr ')' -> ^(Factor Fun '(' double_generalArithExpr ')')
+	| nodecallmethod -> ^(Factor nodecallmethod)
 	;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -322,19 +325,19 @@ cond_if	:	(cond| '!'?Bool)^ (LogicOpr cond)*;
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
-if_rule	:	'if' '(' cond_if ')' '{' code* '}';
+if_rule	:	'if' '(' cond_if ')' (('{' code* '}') | code);
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 elseif_rule
-	:	'elseif' '(' cond_if ')' '{' code* '}';
+	:	'elseif' '(' cond_if ')' (('{' code* '}') | code);
 	// catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 else_rule
-	:	'else' '{' code* '}';
+	:	'else' (('{' code* '}') | code);
 	// catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -380,6 +383,53 @@ catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.inpu
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 var_sign3 : var_sign simicoln;
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+nodeOPJ	:	opj -> ^(OPJ opj);
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+opj	:	'new' nodecallmethod;
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+nodecallmethod
+	:	callmethod -> ^(CALL callmethod);
+	// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+callmethod
+	:	(('this'|callclass)'.'callclass);
+	// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+callclass	:	ID'('(double_oprations)?')';
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+nodereturn
+	:	return_type -> ^(RETURN return_type);
+	// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+return_type	:	'return' (ID|DOUBLE) simicoln;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
