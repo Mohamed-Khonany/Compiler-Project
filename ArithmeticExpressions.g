@@ -21,6 +21,9 @@ IF_Statment;
 FOR_LOOP;
 WHILE_LOOP;
 DO_WHILE_LOOP;
+PrintStatment;
+PrintWord;
+
 }
 @members {
 String s="";
@@ -60,12 +63,42 @@ code
 		|if_statment -> ^(IF_Statment if_statment)
 		|for_loop -> ^(FOR_LOOP for_loop)
 		|while_loop -> ^(WHILE_LOOP while_loop)
-		|do_while_loop -> ^(DO_WHILE_LOOP do_while_loop);
+		|do_while_loop -> ^(DO_WHILE_LOOP do_while_loop)	
+		|print -> ^(PrintStatment print);
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------------
+print	:'System.out.println''('(printbloak) ('+' (printbloak) )* ')'simicoln;
+//int_def	:	('int' ID (',' ID)* (Equl int_oprations)? (simicoln | (',' ID (Equl int_oprations)?)+ simicoln )^ );
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+printbloak
+	:	print_word ->^(PrintWord print_word);
+	// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+print_word
+	:	('"' words '"'|ID|INT|DOUBLE)^ ;
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+	
+words	:	(ID|INT|DOUBLE)*;
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------
 valueInitaltion
 	:	int_def -> ^(InitInt int_def)
 	|	double_def -> ^(InitDouble double_def)
@@ -124,7 +157,7 @@ catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 
 int_generalArithExpr: int_term (('+' | '-')^  int_term)*
 	//-> ^(GeneralArithExpr term (('+' | '-')  term)*)	
-	;	
+	;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -170,6 +203,7 @@ catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 double_generalArithExpr: double_term (('+' | '-')^  double_term)*
 	//-> ^(GeneralArithExpr term (('+' | '-')  term)*)	
 	;	
+
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -217,6 +251,7 @@ catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 float_generalArithExpr: float_term (('+' | '-')^  float_term)*
 	//-> ^(GeneralArithExpr term (('+' | '-')  term)*)	
 	;	
+	
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
