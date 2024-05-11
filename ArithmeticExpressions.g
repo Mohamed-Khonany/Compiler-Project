@@ -28,6 +28,8 @@ METHOD;
 CALL;
 RETURN;
 OPJ;
+INT_ARRAY;
+DOUBLE_ARRAY;
 }
 @members {
 String s="";
@@ -91,7 +93,10 @@ code
 		|for_loop -> ^(FOR_LOOP for_loop)
 		|while_loop -> ^(WHILE_LOOP while_loop)
 		|do_while_loop -> ^(DO_WHILE_LOOP do_while_loop)	
-		|print -> ^(PrintStatment print);
+		|print -> ^(PrintStatment print)
+		|intArray->^(INT_ARRAY intArray)
+		|doubleArray->^(DOUBLE_ARRAY doubleArray)
+		;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -113,7 +118,7 @@ catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
 print_word
-	:	('"' words '"'|nodeOPJ|ID|INT|DOUBLE)^ ;
+	:	('"' words '"'|nodeOPJ|arrayValue|ID|INT|DOUBLE)^ ;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -143,7 +148,6 @@ valueInitaltion1
 	:	int_def -> ^(InitInt int_def)
 	|	double_def -> ^(InitDouble double_def)
 	|	float_def -> ^(InitFloat float_def)
-	|	boolean_def -> ^(InitBoolean boolean_def)
 	|	iso -> ^(ISO iso);
 	
 	// catch blocks go first
@@ -152,7 +156,7 @@ catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 	
 	
-iso : (ID (Equl double_oprations ) simicoln);
+iso : ((ID|arrayValue) Equl (double_oprations|Bool) simicoln);
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -205,6 +209,9 @@ int_factor	:
 	| '-'  INT -> ^(Factor  '-' INT)
 	| '(' int_generalArithExpr ')' -> ^(Factor  '(' int_generalArithExpr ')')
 	| Fun '(' int_generalArithExpr ')' -> ^(Factor Fun '(' int_generalArithExpr ')')
+	| nodecallmethod -> ^(Factor nodecallmethod)
+	| intequvlanteOfArray->^(Factor intequvlanteOfArray)
+	| arrayValue -> ^(Factor arrayValue)
 	;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -253,6 +260,8 @@ double_factor	:  ID -> ^(Factor ID)
 	| '(' double_generalArithExpr ')' -> ^(Factor  '(' double_generalArithExpr ')')
 	| Fun '(' double_generalArithExpr ')' -> ^(Factor Fun '(' double_generalArithExpr ')')
 	| nodecallmethod -> ^(Factor nodecallmethod)
+	| intequvlanteOfArray->^(Factor intequvlanteOfArray)
+	| arrayValue -> ^(Factor arrayValue)
 	;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -301,6 +310,8 @@ float_factor	:  ID -> ^(Factor ID)
 	| '-'  DOUBLE F_float  -> ^(Factor  '-' DOUBLE F_float)
 	| '(' double_generalArithExpr ')' -> ^(Factor  '(' double_generalArithExpr ')')
 	| Fun '(' double_generalArithExpr ')' -> ^(Factor Fun '(' double_generalArithExpr ')')
+	| nodecallmethod -> ^(Factor nodecallmethod)
+	| arrayValue -> ^(Factor arrayValue)
 	;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -315,12 +326,13 @@ if_statment
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
-cond	:	(double_oprations CondOpr double_oprations);
+cond	:	(double_oprations (CondOpr double_oprations)?);
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
-cond_if	:	(cond| '!'?Bool)^ (LogicOpr cond)*;
+cond_if	:	( (cond |'!' '('cond')' ) |'!'? Bool)^ (LogicOpr cond)*;
+
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -410,13 +422,13 @@ catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.to
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
 callmethod
-	:	(('this'|callclass)'.'callclass);
+	:	(('this'|callclass)('.'callclass)*);
 	// catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
-callclass	:	ID'('(double_oprations)?')';
+callclass	:	ID('('(double_oprations (',' double_oprations)* )?')')?;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
@@ -429,12 +441,43 @@ catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.inpu
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
-return_type	:	'return' (ID|DOUBLE) simicoln;
+return_type	:	'return' (ID|DOUBLE|INT) simicoln;
 // catch blocks go first
 catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+intArray: 'int''[]' ID (Equl intequvlanteOfArray)? simicoln;
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+intequvlanteOfArray
+	:	 ('new' 'int' '['int_oprations']' | '{' INT(','INT)*'}');
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+arrayValue
+	:	ID'['int_oprations']';
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+
+doubleArray: 'double''[]' ID (Equl doubleequvlanteOfArray)? simicoln;
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+doubleequvlanteOfArray
+	:	 ('new' 'double' '['int_oprations']' | '{' DOUBLE(','DOUBLE)*'}');
+// catch blocks go first
+catch[MismatchedTokenException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[NoViableAltException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
+catch[RecognitionException e] { s = s +getErrorMessage(e,new String[]{e.input.toString()})+": "+getErrorHeader(e) +"\n";}
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 simicoln:	SIMI->^(Simicoln SIMI);
